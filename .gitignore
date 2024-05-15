@@ -2,3 +2,4 @@
 sources
 venv
 __pycache__
+.streamlit
