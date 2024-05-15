@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime, date
 import datetime
 from streamlit_gsheets import GSheetsConnection
-from modules.helper import profile, process_offense, datetimeEncoded
+from modules.helper import profile, process_offense, datetimeEncoded, local_address
 from app import read_data
 
 st.set_page_config("New Entry")
@@ -130,19 +130,19 @@ def entry_number():
             st.subheader("Victim's Address")
             region, distprov = st.columns(2)
             region.text_input("Region",value="Region XII",disabled=True,key="vic_region")
-            distprov.selectbox("District/Province",([province_value]),disabled=True,key="vic_distprov")
+            vic_distprov = distprov.selectbox("District/Province",([province_value]),disabled=True,key="vic_distprov")
 
             # Address - RCity/Municipality, Barangay and House No/Street Name
             citymun, brgy = st.columns(2)
-            citymun.selectbox("City/Municipality",([muncity_value]),disabled=True,key="vic_citymun")
-            Vselected_brgy = brgy.selectbox("Barangay :red[#]",Abrgy,placeholder="Please select a Barangay",key="vic_abrgy",index=None)
+            vic_cityMun = citymun.selectbox("City/Municipality",([muncity_value]),disabled=True,key="vic_citymun")
+            vic_brgy = brgy.selectbox("Barangay :red[#]",Abrgy,placeholder="Please select a Barangay",key="vic_abrgy",index=None)
 
 
             # Check if a Barangay was selected
-            if Vselected_brgy == None:
+            if vic_brgy == None:
                 st.warning("Please select a Barangay.")
             else:
-                st.text_input("House No./Street Name",key="vic_strName")
+                vic_add_street = st.text_input("House No./Street Name",key="vic_strName")
 
             st.write("---")
 
@@ -172,13 +172,13 @@ def entry_number():
             st.subheader("Suspect's Address")
             region, distprov = st.columns(2)
             region.text_input("Region",value="Region XII",disabled=True,key="sus_region")
-            distprov.selectbox("District/Province",([province_value]),disabled=True,key="sus_distprov")
+            sus_distprov = distprov.selectbox("District/Province",([province_value]),disabled=True,key="sus_distprov")
 
             # Address - RCity/Municipality, Barangay and House No/Street Name
             citymun, brgy = st.columns(2)
-            citymun.selectbox("City/Municipality",([muncity_value]),disabled=True,key="sus_citymun")
-            brgy.selectbox("Barangay",Abrgy,placeholder="Please select a Barangay",key="sus_abrgy",index=None)
-            st.text_input("House No./Street Name",key="sus_strName")
+            sus_cityMun = citymun.selectbox("City/Municipality",([muncity_value]),disabled=True,key="sus_citymun")
+            sus_brgy = brgy.selectbox("Barangay",Abrgy,placeholder="Please select a Barangay",key="sus_abrgy",index=None)
+            sus_add_street = st.text_input("House No./Street Name",key="sus_strName")
 
 
             st.write("---")
@@ -271,7 +271,7 @@ def entry_number():
             st.error('Victim\'s Last name is required.')
         if not validate_gender(vic_gndr):
             st.error('Victim\'s Gender is required.')
-        if not validate_brgy(Vselected_brgy):
+        if not validate_brgy(vic_brgy):
             st.error('Victim\'s Barangay address is required.')
         if not validate_date_reported(dt_reported):
             st.error("Please change the Date Reported")
@@ -282,7 +282,7 @@ def entry_number():
         if not validate_case_status(case_status):
             st.error('Case status is required.')
 
-        if validate_name(vic_fname) and validate_name(vic_lname) and validate_gender(vic_gndr) and validate_brgy(Vselected_brgy) and validate_date_reported(dt_reported) and validate_brgy(incident_selected_brgy) and validate_offense(check, offenseType, otherOffense) and validate_case_status(case_status):
+        if validate_name(vic_fname) and validate_name(vic_lname) and validate_gender(vic_gndr) and validate_brgy(vic_brgy) and validate_date_reported(dt_reported) and validate_brgy(incident_selected_brgy) and validate_offense(check, offenseType, otherOffense) and validate_case_status(case_status):
 
             sub_Entry = st.button("Submit Entry",use_container_width=True, type="primary")
             if sub_Entry:
@@ -291,12 +291,20 @@ def entry_number():
 
                 # Process Victims profile
                 vic_name = profile(vic_fname,vic_midname,vic_lname,vic_qlfr, vic_alias,vic_age,vic_gndr)
+                # Process Victim's Address
+                vic_address = local_address(vic_add_street, vic_brgy, vic_cityMun, vic_distprov)
+
 
                 # Process Suspects profile
                 sus_name = profile(sus_fname,sus_midname,sus_lname,sus_qlfr, sus_alias,sus_age,sus_gndr)
+                # Process Suspect's Address
+                sus_address = local_address(sus_add_street, sus_brgy, sus_cityMun, sus_distprov)
+
 
                 # Process Offense
                 offense_Type, offenseClass = process_offense(offenseType,otherOffense,offClassification)
+
+
                 newEntry = pd.DataFrame(
                     [
                         {
@@ -318,9 +326,9 @@ def entry_number():
 							#SUBJECT FOR CHANGE
 							"OFFENSE TYPE": offenseClass,
 							"VICTIMS NAME (AGE/SEX)": vic_name,
-                            "VICTIMS LOCAL ADDRESS": "",
+                            "VICTIMS LOCAL ADDRESS": vic_address,
                             "SUSPECTS NAME (AGE/SEX)": sus_name,
-                            "SUSPECTS LOCAL ADDRESS": "",
+                            "SUSPECTS LOCAL ADDRESS": sus_address,
                             "NARRATIVE":det_narrative,
                             "CASE STATUS":case_status,
 
