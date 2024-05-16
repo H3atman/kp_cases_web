@@ -321,9 +321,7 @@ def entry_number():
                             "TIME REPORTED":time_reported_str,
                             "DATE COMMITTED": dt_committed,
                             "TIME COMMITTED": time_committed_str,
-							#SUBJECT FOR CHANGE
                             "OFFENSE":offense_Type,
-							#SUBJECT FOR CHANGE
 							"OFFENSE TYPE": offenseClass,
 							"VICTIMS NAME (AGE/SEX)": vic_name,
                             "VICTIMS LOCAL ADDRESS": vic_address,
@@ -342,7 +340,7 @@ def entry_number():
                 # Update Google Sheets with the new Data
                 conn.update(worksheet=Amps, data=updated_df)
                 st.success('Entry Successfuly Submitted')
-                st.cache_data.clear()
+                # st.cache_data.clear()
                 # st.switch_page("app.py")
                 
 

@@ -14,8 +14,11 @@ css ='''
 '''
 st.markdown(css, unsafe_allow_html=True)
 
+# Start the connection to Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
+users_db = st.connection("usersDB", type=GSheetsConnection)
 
+# Fomat the dates
 def dateseq():
     # Get the current date
     current_date = date.today()
@@ -26,9 +29,28 @@ def dateseq():
     return formatted_date
 
 
+
+# Define the login form
+def login():
+    with st.form(key="login"):
+        st.title("KP Cases Encoding Users Login")
+        st.text_input("Username")
+        st.text_input("Password",type="password")
+
+        st.form_submit_button("Submit")
+
+
+
+# Initialize Login
+login()
+
+
+
+
 Appo = "COTABATO PPO"
 Amps = "ALAMADA MPS"
 Abrgy = []
+
 
 @st.cache_data(ttl=5)
 def read_data(worksheet, usecols):
@@ -62,6 +84,7 @@ def new_entry_page(entry_seq, Amps):
     combined_value = "{}-{}-{}-{}".format(entrySeq_value, dateMon_value, monthRep_value, entryNum_value)
 
     return entryNum_value, combined_value
+
 
 entryNum, combined_value = new_entry_page(entry_seq, Amps)
 
