@@ -31,17 +31,9 @@ def read_data(worksheet, usecols):
     data = data.dropna(how="all")
     return data
 
-# Fomat the dates
-def dateseq():
-    # Get the current date
-    current_date = date.today()
 
-    # Format the date to 'YYYYMM'
-    formatted_date = current_date.strftime('%Y%m')
-
-    return formatted_date
-
-def login(login_placeholder):
+def login():
+    login_placeholder = st.empty()
     with login_placeholder.form(key="login",clear_on_submit=True):
         st.title("KP Cases Encoding Users Login")
         username = st.text_input("Username")
@@ -59,7 +51,6 @@ def login(login_placeholder):
                     imps = read_user.loc[user_exists,'mps_cps'].values[0]
                     st.session_state.logged_in = True
                     st.session_state.username = username
-                    login_placeholder.empty()  # Clear the login form
                 else:
                     st.error('Incorrect password')
             else:
@@ -67,49 +58,50 @@ def login(login_placeholder):
         if st.form_submit_button("Login",type="primary"):
             if 'logged_in' in st.session_state and st.session_state.logged_in:
                 st.write(f'Logged in as {username}')
+                st.switch_page("pages/entryCode.py")
+                # login_placeholder.empty()  # Clear the login form
         return ippo, imps
 
 # Initialize Login
-login_placeholder = st.empty()
 if 'logged_in' not in st.session_state or not st.session_state.logged_in:
-    Appo, Amps = login(login_placeholder)
+    Appo, Amps = login()
 else:
-    Appo = st.session_state.Appo
-    Amps = st.session_state.Amps
+    st.session_state.Appo
+    st.session_state.Amps
 
 Abrgy = []
 
-# Get the Station Sequence
-entry_seq = read_data("station_seq", list(range(3)))
+# # Get the Station Sequence
+# entry_seq = read_data("station_seq", list(range(3)))
 
-def new_entry_page(entry_seq, Amps):
-    st.title('Katarungang Pambarangay Cases Detailed Report Encoding')
-    st.title(f":red[{Amps} - {Appo}]")
-    # Get the Blotter Sequence
-    entry_seq = entry_seq.loc[entry_seq['mps_cps'] == Amps, 'seq'].values[0]
+# def new_entry_page(entry_seq, Amps):
+#     st.title('Katarungang Pambarangay Cases Detailed Report Encoding')
+#     st.title(f":red[{Amps} - {Appo}]")
+#     # Get the Blotter Sequence
+#     entry_seq = entry_seq.loc[entry_seq['mps_cps'] == Amps, 'seq'].values[0]
 
-    entrySeq, dateMon, monthRep ,entryNum = st.columns(4)
+#     entrySeq, dateMon, monthRep ,entryNum = st.columns(4)
 
-    entrySeq_value = entrySeq.text_input("Station Code", entry_seq, disabled=True, key="AentrySeq")
+#     entrySeq_value = entrySeq.text_input("Station Code", entry_seq, disabled=True, key="AentrySeq")
 
-    dateMon_value = dateMon.text_input("Year|Month",dateseq(), disabled=True)
+#     dateMon_value = dateMon.text_input("Year|Month",dateseq(), disabled=True)
 
-    monthRep_value = monthRep.number_input("Year|Month 'YYYYMM'",help="Enter the YEAR and MONTH the KP Incident is Reported (e.g 202105, 202212)",step=1,min_value=202101,max_value=202412)
+#     monthRep_value = monthRep.number_input("Year|Month 'YYYYMM'",help="Enter the YEAR and MONTH the KP Incident is Reported (e.g 202105, 202212)",step=1,min_value=202101,max_value=202412)
 
-    entryNum_value = entryNum.number_input("Entry Number :red[#]",step=1,min_value=1)
+#     entryNum_value = entryNum.number_input("Entry Number :red[#]",step=1,min_value=1)
 
-    combined_value = "{}-{}-{}-{}".format(entrySeq_value, dateMon_value, monthRep_value, entryNum_value)
+#     combined_value = "{}-{}-{}-{}".format(entrySeq_value, dateMon_value, monthRep_value, entryNum_value)
 
-    return entryNum_value, combined_value
+#     return entryNum_value, combined_value
 
-if 'logged_in' in st.session_state and st.session_state.logged_in:
-    entryNum, combined_value = new_entry_page(entry_seq, Amps)
+# if 'logged_in' in st.session_state and st.session_state.logged_in:
+#     entryNum, combined_value = new_entry_page(entry_seq, Amps)
 
-    # Save combined_value in session state
-    if 'combined_value' not in st.session_state:
-        st.session_state.combined_value = combined_value
-    else:
-        st.session_state.combined_value = combined_value
+#     # Save combined_value in session state
+#     if 'combined_value' not in st.session_state:
+#         st.session_state.combined_value = combined_value
+#     else:
+#         st.session_state.combined_value = combined_value
 
-    if st.button("New Entry",type="primary",use_container_width=True):
-        st.switch_page("pages/entryForm.py")
+#     if st.button("New Entry",type="primary",use_container_width=True):
+#         st.switch_page("pages/entryForm.py")
