@@ -4,7 +4,7 @@ from datetime import datetime, date
 import time
 import datetime
 from streamlit_gsheets import GSheetsConnection
-from modules.helper import profile, process_offense, datetimeEncoded, local_address
+from modules.helper import profile, process_offense, datetimeEncoded, local_address, vic_name_process
 from app import read_data
 
 st.set_page_config("New Entry")
@@ -77,7 +77,7 @@ else:
     data = read_data("RXII_Barangay", list(range(5)))
     offenseKP = read_data("offense", list(range(2)))
     existing_data = read_data(Amps, list(range(21)))
-
+    vic_prof = read_data(str(Amps) + " - vic_prof", list(range(28)))
 
 
     # Get the Province Value
@@ -341,7 +341,7 @@ else:
                                 "TIME REPORTED":time_reported_str,
                                 "DATE COMMITTED": dt_committed,
                                 "TIME COMMITTED": time_committed_str,
-                                "OFFENSE":offense_Type,
+                                "OFFENSE": offense_Type,
                                 "OFFENSE TYPE": offenseClass,
                                 "VICTIMS NAME (AGE/SEX)": vic_name,
                                 "VICTIMS LOCAL ADDRESS": vic_address,
@@ -349,8 +349,6 @@ else:
                                 "SUSPECTS LOCAL ADDRESS": sus_address,
                                 "NARRATIVE":det_narrative,
                                 "CASE STATUS":case_status,
-
-
                             }
                         ]
                     )
@@ -359,6 +357,56 @@ else:
 
                     # Update Google Sheets with the new Data
                     conn.update(worksheet=Amps, data=updated_df)
+
+                    # Process Victims profile
+                    vic_fname,vic_midname,vic_lname,vic_qlfr, vic_alias,vic_age,vic_gndr = vic_name_process(vic_fname,vic_midname,vic_lname,vic_qlfr, vic_alias,vic_age,vic_gndr)
+
+                    # Process Offense
+                    offense_Type, offenseClass = process_offense(offenseType,otherOffense,offClassification)
+
+                    #Start Victim Entry Here
+                    vic_Entry = pd.DataFrame(
+                        [
+                            {
+                                "ENTRY NUMBER": entryNumber,
+                                "DATE ENCODED":datetimeEncoded(),
+                                "PRO": "PRO 12",
+                                "PPO": Appo,
+                                "STATION": Amps,
+                                "PROVINCE":pi_distprov,
+                                "CITY":pi_citymun,
+                                "BARANGAY":incident_selected_brgy,
+                                "STREET": pi_street,
+                                "DATE REPORTED": dt_reported,
+                                "TIME REPORTED":time_reported_str,
+                                "DATE COMMITTED": dt_committed,
+                                "TIME COMMITTED": time_committed_str,
+                                "VICTIM FIRST NAME":vic_fname,
+                                "VICTIM MIDDLE NAME":vic_midname,
+                                "VICTIM LAST NAME":vic_lname,
+                                "VICTIM QUALIFIER":vic_qlfr,
+                                "VICTIM ALIAS":vic_alias,
+                                "VICTIM AGE":vic_age,
+                                "VICTIM SEX":vic_gndr,
+                                "VICTIM Province Address": vic_distprov,
+                                "Victim City Address":vic_cityMun,
+                                "VICTIM Street/House Number Address":vic_add_street,
+                                "SUSPECTS NAME (AGE/SEX)": sus_name,
+                                "OFFENSE": offense_Type,
+                                "OFFENSE TYPE": offenseClass,
+                                "NARRATIVE":det_narrative,
+                                "CASE STATUS":case_status,
+
+
+                            }
+                        ]
+                    )
+                    updated_vic_df =  pd.concat([vic_prof, vic_Entry], ignore_index=True)
+
+                    # Update Google Sheets with the new Data
+                    conn.update(worksheet=str(Amps) + " - vic_prof", data=updated_vic_df)
+
+
                     st.success('Entry Successfuly Submitted')
                     time.sleep(3)
                     st.balloons
