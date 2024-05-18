@@ -52,3 +52,4 @@ def local_address(street, brgy, cityMun, province):
     else:
         address = f"{street} {brgy}, {cityMun} {province}"
     return address
+

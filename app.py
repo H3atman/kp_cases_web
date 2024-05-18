@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
+import psycopg2
 
 st.set_page_config("KP Cases Login")
 
@@ -13,61 +13,62 @@ css ='''
 '''
 st.markdown(css, unsafe_allow_html=True)
 
-# Start the connection to Google Sheets
-conn = st.connection("gsheets", type=GSheetsConnection)
-users_db = st.connection("usersDB", type=GSheetsConnection)
 
-# ===========  Start FUNCTIONS  ====================
-@st.cache_data(ttl=60)
-def read_users_db(worksheet, usecols):
-    user_data = users_db.read(worksheet=worksheet, usecols=usecols)
-    user_data = user_data.dropna(how="all")
-    return user_data
-
-@st.cache_data(ttl=60)
-def read_data(worksheet, usecols):
-    data = conn.read(worksheet=worksheet, usecols=usecols)
-    data = data.dropna(how="all")
-    return data
+# Get the PostgreSQL connection details from the secrets
+pg_conn = st.secrets["connections"]["postgresql"]
 
 
-def login():
-    login_placeholder = st.empty()
-    with login_placeholder.form(key="login",clear_on_submit=True):
-        st.title("KP Cases Encoding Users Login")
+
+# Connect to your PostgreSQL database
+def db_conn():
+    conn = psycopg2.connect(
+        dbname=pg_conn["database"],
+        user=pg_conn["username"],
+        password=pg_conn["password"],
+        host=pg_conn["host"],
+        port=pg_conn["port"]
+    )
+    return conn
+
+
+# Initialize Connection to the database
+conn = db_conn()
+
+
+
+# Verify user credentials
+def authenticate_user(username, password):
+    cursor = conn.cursor()
+    cursor.execute("SELECT username, passwd FROM userbase WHERE username = %s AND passwd = %s", (username, password))
+    cursor.fetchone()
+    cursor.execute("SELECT ppo_cpo, mps_cps FROM userbase WHERE username = %s AND passwd = %s", (username, password))
+    details = cursor.fetchone()
+    cursor.close()
+    if details:
+        Appo, Amps = details
+        return Appo, Amps
+    else:
+        return None, None
+
+
+def login_form():
+    st.title("KP Cases Encoding Users Login", anchor=False)
+    with st.form(key="login", clear_on_submit=True):
         username = st.text_input("Username")
-        passwd = st.text_input("Password",type="password")
-        # Read the Users Database
-        read_user = read_users_db("users_db",list(range(4)))
-        ippo = None
-        imps = None
-        if username:  # Check if username is not empty
-            user_exists = read_user['user'] == username
-            if user_exists.any():
-                correct_password = read_user.loc[user_exists, 'passwd'].values[0] == passwd
-                if correct_password:
-                    ippo = read_user.loc[user_exists,'ppo_cpo'].values[0]
-                    imps = read_user.loc[user_exists,'mps_cps'].values[0]
-                    st.session_state.logged_in = True
-                    st.session_state.username = username
-                    # Store Appo in session_state
-                    st.session_state.Appo = ippo
-                    # Store Amps in session_state
-                    st.session_state.Amps = imps
-                else:
-                    st.error('Incorrect password')
-            else:
-                st.error('User does not exist')
-        if st.form_submit_button("Login",type="primary"):
-            if 'logged_in' in st.session_state and st.session_state.logged_in:
-                st.write(f'Logged in as {username}')
+        password = st.text_input("Password",type="password")
+        if st.form_submit_button("Submit"):
+            Appo, Amps = authenticate_user(username, password)
+            if Appo and Amps:
+                st.success("You've successfuly logged-in!")
+                st.session_state['Amps'] = Amps
+                st.session_state['Appo'] = Appo
+                # st.write(st.session_state['Amps'], st.session_state['Appo'])
                 st.switch_page("pages/entryCode.py")
-                # login_placeholder.empty()  # Clear the login form
-        return ippo, imps
+            else:
+                st.error("Invalid username or password. Please try again.")
 
-# Initialize Login
-if 'logged_in' not in st.session_state or not st.session_state.logged_in:
-    Appo, Amps = login()
-else:
-    st.session_state.Appo
-    st.session_state.Amps
+# Initiate login form
+login_form()
+
+
+

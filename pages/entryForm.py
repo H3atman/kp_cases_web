@@ -5,10 +5,13 @@ import time
 import datetime
 from streamlit_gsheets import GSheetsConnection
 from modules.helper import profile, process_offense, datetimeEncoded, local_address, vic_name_process
-from app import read_data
+from app import db_conn
 
 st.set_page_config("New Entry")
 
+
+# Initialize Connection to the database
+conn = db_conn()
 
 # HIDE NAVBAR and stFormSubmitButton
 css ='''
@@ -30,7 +33,6 @@ else:
     # If they are, continue with your code
     Appo = st.session_state.Appo
     Amps = st.session_state.Amps
-    Abrgy = []
 
 
     def validate_name(name):
@@ -62,17 +64,6 @@ else:
         except ValueError:
             st.error('Invalid time format. Please enter time in the format "HH\\:MM AM/PM".')
             return None
-
-    def dateseq():
-        # Get the current date
-        current_date = date.today()
-
-        # Format the date to 'YYYYMM'
-        formatted_date = current_date.strftime('%Y%m')
-
-        return formatted_date
-
-    conn = st.connection("gsheets", type=GSheetsConnection)
 
     data = read_data("RXII_Barangay", list(range(5)))
     offenseKP = read_data("offense", list(range(2)))
