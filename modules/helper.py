@@ -185,6 +185,7 @@ def convert_to_proper_time(time_reported_str, time_committed_str):
     if time_committed_str.strip():
         time_committed = datetime.strptime(time_committed_str, "%I:%M %p").time()
     else:
+        # temp fix lang po itooo
         time_committed = time_reported
 
     # Return the time objects
