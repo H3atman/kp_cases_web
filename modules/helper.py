@@ -184,10 +184,14 @@ def convert_to_proper_time(time_reported_str, time_committed_str):
 
     # Check if time_committed_str is not blank and is a valid time string
     try:
-        time_committed = datetime.strptime(time_committed_str, "%I:%M %p").time()
+        if time_committed_str:
+            time_committed = datetime.strptime(time_committed_str, "%I:%M %p").time()
+        else:
+            time_committed = time_reported
     except Exception as e:
         # If it's not a valid time string, assign time_reported to time_committed
         st.error(f"An error occurred: Error Details: {str(e)}\n{traceback.format_exc()}")
+        time_committed = time_reported
 
     # Convert the time objects into strings in the "HH:MM:SS" format
     time_reported_str = time_reported.strftime("%H:%M:%S")
@@ -195,6 +199,7 @@ def convert_to_proper_time(time_reported_str, time_committed_str):
 
     # Return the time strings
     return time_reported_str, time_committed_str
+
 
 
 def query_encoded_data(Appo, Amps):
