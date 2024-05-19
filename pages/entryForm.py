@@ -227,7 +227,7 @@ else:
                 with DTcommitted:
                     st.subheader("Date & Time Committed")
                     dt_committed = st.date_input("Date Committed",help="If di po available sa data ang exact date reported paki pili nalang po ang 1st day of the month",value=None, format="YYYY/MM/DD")
-                    time_committed_str = st.text_input("Time Committed", placeholder='Time format 12:00 AM')
+                    time_committed_str = st.text_input("Time Committed", placeholder='Time format 12:00 AM',value="11:59 PM",disabled=True)
                     # time_committed = convert_time(time_committed_str)
 
                 st.write("---")
