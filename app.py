@@ -17,10 +17,10 @@ hide_st_style = """
             <style>
             #MainMenu {visibility: hidden;}
             header {visibility: hidden;}
-            viewerBadge_link__qRIco {visibility: hidden;}
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
+
 
 footer_html = """<div style='text-align: center;'>
   <p>Developed with ❤️ by Rafael Villanueva</p>
