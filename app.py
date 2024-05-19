@@ -22,12 +22,6 @@ hide_st_style = """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
 
-footer_html = """<div style='text-align: center;'>
-  <p>Developed by Rafael Villanueva 🤙🏻🤘🏻🎉</p>
-</div>"""
-st.markdown(footer_html, unsafe_allow_html=True)
-
-
 # Initialize Connection to the database
 conn = db_conn()
 # conn = st.connection("postgresql", type="sql")
@@ -69,4 +63,7 @@ def login_form():
 login_form()
 
 
-
+footer_html = """<div style='text-align: center;'>
+  <p>Developed by Rafael Villanueva 🤙🏻🤘🏻🎉</p>
+</div>"""
+st.markdown(footer_html, unsafe_allow_html=True)
