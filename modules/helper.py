@@ -181,11 +181,11 @@ def convert_to_proper_time(time_reported_str, time_committed_str):
     # Convert the strings into datetime objects
     time_reported = datetime.strptime(time_reported_str, "%I:%M %p").time()
 
-    # Check if time_committed_str is not blank
-    if time_committed_str.strip():
+    # Check if time_committed_str is not blank and is a valid time string
+    try:
         time_committed = datetime.strptime(time_committed_str, "%I:%M %p").time()
-    else:
-        # temp fix lang po itooo
+    except ValueError:
+        # If it's not a valid time string, assign time_reported to time_committed
         time_committed = time_reported
 
     # Return the time objects
