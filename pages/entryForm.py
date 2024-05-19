@@ -340,8 +340,8 @@ else:
                     st.success('Entry Successfuly Submitted')
                     # time.sleep(3)
                     # st.balloons
-                    # st.cache_data.clear()
-                    # st.switch_page("pages/entryCode.py")
+                    st.cache_data.clear()
+                    st.switch_page("pages/entryCode.py")
                     
 
         except Exception as e:
