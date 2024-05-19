@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import datetime
 import psycopg2
 from psycopg2.errors import UniqueViolation
+import traceback
 
 def profile(fname, midname, lname, qlfr, alias, age, sex):
     if not fname:
@@ -184,9 +185,9 @@ def convert_to_proper_time(time_reported_str, time_committed_str):
     # Check if time_committed_str is not blank and is a valid time string
     try:
         time_committed = datetime.strptime(time_committed_str, "%I:%M %p").time()
-    except ValueError:
+    except Exception as e:
         # If it's not a valid time string, assign time_reported to time_committed
-        time_committed = time_reported
+        st.error(f"An error occurred: Error Details: {str(e)}\n{traceback.format_exc()}")
 
     # Convert the time objects into strings in the "HH:MM:SS" format
     time_reported_str = time_reported.strftime("%H:%M:%S")
