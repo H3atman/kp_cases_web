@@ -119,7 +119,17 @@ else:
 
 
 
-footer_html = """<div style='text-align: center;'>
-  <p>Developed by Rafael Villanueva 🤙🏻🤘🏻🎉</p>
-</div>"""
+footer_html = """
+<style>
+.sticky-footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+}
+</style>
+<div class='sticky-footer'>
+    <p>Developed by Rafael Villanueva 🤙🏻🤘🏻🎉</p>
+</div>
+"""
 st.markdown(footer_html, unsafe_allow_html=True)
