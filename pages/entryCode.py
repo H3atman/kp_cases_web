@@ -125,6 +125,8 @@ footer_html = """
     position: fixed;
     bottom: 0;
     width: 100%;
+    margin-left: auto;
+    margin-right: auto;
     text-align: center;
 }
 </style>
