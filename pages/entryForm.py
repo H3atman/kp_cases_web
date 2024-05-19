@@ -1,14 +1,10 @@
 import streamlit as st
-import pandas as pd
 from datetime import datetime, date
-import time
 import datetime
-from streamlit_gsheets import GSheetsConnection
-from modules.helper import profile, process_offense, datetimeEncoded, local_address, vic_name_process
-from app import db_conn
+import traceback
+from modules.helper import profile, process_offense, local_address, vic_name_process, db_conn, get_prov_data, get_muncity_data, get_brgy_data, get_crime_incidentName_data, get_crime_classification_data, store_data, convert_to_proper_time
 
 st.set_page_config("New Entry")
-
 
 # Initialize Connection to the database
 conn = db_conn()
@@ -23,7 +19,12 @@ css ='''
 '''
 st.markdown(css, unsafe_allow_html=True)
 
-st.warning("Please dont refresh the app to prevent resetting your encoded data")
+st.warning("""
+           
+           Please dont refresh the website to avoid resetting your encoded data \n 
+           You can hover to question mark icons "❔" to learn more.
+           
+           """)
 
 # Check if Appo and Amps are initialized in st.session_state
 if 'Appo' not in st.session_state or 'Amps' not in st.session_state:
@@ -64,24 +65,30 @@ else:
         except ValueError:
             st.error('Invalid time format. Please enter time in the format "HH\\:MM AM/PM".')
             return None
+        
+    # Get the Name of Barangays for Respective Mun/City with the Corresponding Provinces
+    data = get_brgy_data(Appo, Amps)
 
-    data = read_data("RXII_Barangay", list(range(5)))
-    offenseKP = read_data("offense", list(range(2)))
-    existing_data = read_data(Amps, list(range(21)))
-    vic_prof = read_data(str(Amps) + " - vic_prof", list(range(28)))
+    # Get the Offense Type with the Offense Classification
+    offense = get_crime_incidentName_data()
+    offenseKP = [item[0] for item in offense]
 
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # vic_prof = read_data(str(Amps) + " - vic_prof", list(range(28)))
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     # Get the Province Value
-    province_value = data.loc[data['PPO'] == Appo, 'Province'].values[0]
+    province_value = get_prov_data(Appo)
 
     # Get the Municipality Value and Barangay Value
     if Appo == "GENERAL SANTOS CPO":
-        muncity_value = data.loc[data['MPS_CPS'] == Amps, 'MPS_CPS'].values[0]
-        Abrgy = data.loc[data['MPS_CPS'] == muncity_value, 'Barangay'].tolist()
+        muncity_value = get_muncity_data(Appo)[0][0]  # Assuming the first value is the required one
+        Abrgy = [item[0] for item in get_brgy_data(Appo, Amps)]  # Convert the result to a list
 
     else:
-        muncity_value = data.loc[data['MPS_CPS'] == Amps, 'Municipality_City'].values[0]
-        Abrgy = data.loc[data['Municipality_City'] == muncity_value, 'Barangay'].tolist()
+        muncity_value = get_muncity_data(Appo)[0][0]  # Assuming the first value is the required one
+        Abrgy = [item[0] for item in get_brgy_data(Appo, Amps)]  # Convert the result to a list
+
 
 
     st.title('Katarungang Pambarangay Cases Detailed Report Encoding')
@@ -193,7 +200,7 @@ else:
                 DTreported, DTcommitted = st.columns(2)
                 with DTreported:
                     st.subheader("Date & Time Reported")
-                    dt_reported = st.date_input("Date Reported :red[#]",help="If di po available sa data ang exact date reported paki pili nalang po ang 1st day of the month")
+                    dt_reported = st.date_input("Date Reported :red[#]",help="If di po available sa data ang exact date reported paki pili nalang po ang 1st day of the month", format="YYYY/MM/DD")
                     if dt_reported == datetime.date.today():
                         st.warning("Please change the Date Reported")
                     time_reported_str = st.text_input("Time Reported", placeholder='Time format 12:00 AM')
@@ -209,7 +216,7 @@ else:
 
                 with DTcommitted:
                     st.subheader("Date & Time Committed")
-                    dt_committed = st.date_input("Date Committed",help="If di po available sa data ang exact date reported paki pili nalang po ang 1st day of the month",value=None)
+                    dt_committed = st.date_input("Date Committed",help="If di po available sa data ang exact date reported paki pili nalang po ang 1st day of the month",value=None, format="YYYY/MM/DD")
                     time_committed_str = st.text_input("Time Committed", placeholder='Time format 12:00 AM')
                     # time_committed = convert_time(time_committed_str)
 
@@ -234,7 +241,7 @@ else:
 
 
             with offense:
-                generate_offense = offenseKP['incidents'].values
+                generate_offense = offenseKP
                 st.subheader("Offense :red[#]")
                 offenseType_placeholder = st.empty()
                 offenseType = offenseType_placeholder.selectbox("Select Offense :red[#]",generate_offense,index=None,placeholder="Please select an Offense")
@@ -243,7 +250,7 @@ else:
                 offClassification = ""
                 offClassification_placeholder = st.empty()
                 if offenseType != None:
-                    offClassification = offenseKP.loc[offenseKP['incidents'] == offenseType, 'classification'].values[0]
+                    offClassification = get_crime_classification_data(offenseType)
                     offClassification_placeholder.text_input("Offense Classification",offClassification,disabled=True)
                 if offenseType == None:
                     offClassification_placeholder.warning("Please Select Offense")
@@ -299,6 +306,7 @@ else:
                 if sub_Entry:
                     # Fuction to encode data google sheet
                     print(f"{entryNumber} Entry Successfuly Submitted")
+                    print(dt_reported)
 
                     # Process Victims profile
                     vic_name = profile(vic_fname,vic_midname,vic_lname,vic_qlfr, vic_alias,vic_age,vic_gndr)
@@ -311,43 +319,8 @@ else:
                     # Process Suspect's Address
                     sus_address = local_address(sus_add_street, sus_brgy, sus_cityMun, sus_distprov)
 
-
                     # Process Offense
                     offense_Type, offenseClass = process_offense(offenseType,otherOffense,offClassification)
-
-
-                    newEntry = pd.DataFrame(
-                        [
-                            {
-                                "ENTRY NUMBER": entryNumber,
-                                "DATE ENCODED":datetimeEncoded(),
-                                "PRO": "PRO 12",
-                                "PPO": Appo,
-                                "STATION": Amps,
-                                "PROVINCE":pi_distprov,
-                                "CITY":pi_citymun,
-                                "BARANGAY":incident_selected_brgy,
-                                "STREET": pi_street,
-                                "DATE REPORTED": dt_reported,
-                                "TIME REPORTED":time_reported_str,
-                                "DATE COMMITTED": dt_committed,
-                                "TIME COMMITTED": time_committed_str,
-                                "OFFENSE": offense_Type,
-                                "OFFENSE TYPE": offenseClass,
-                                "VICTIMS NAME (AGE/SEX)": vic_name,
-                                "VICTIMS LOCAL ADDRESS": vic_address,
-                                "SUSPECTS NAME (AGE/SEX)": sus_name,
-                                "SUSPECTS LOCAL ADDRESS": sus_address,
-                                "NARRATIVE":det_narrative,
-                                "CASE STATUS":case_status,
-                            }
-                        ]
-                    )
-                    # Start adding the newEntry data on the on the existing data
-                    updated_df =  pd.concat([existing_data, newEntry], ignore_index=True)
-
-                    # Update Google Sheets with the new Data
-                    conn.update(worksheet=Amps, data=updated_df)
 
                     # Process Victims profile
                     vic_fname,vic_midname,vic_lname,vic_qlfr, vic_alias,vic_age,vic_gndr = vic_name_process(vic_fname,vic_midname,vic_lname,vic_qlfr, vic_alias,vic_age,vic_gndr)
@@ -355,59 +328,24 @@ else:
                     # Process Offense
                     offense_Type, offenseClass = process_offense(offenseType,otherOffense,offClassification)
 
-                    #Start Victim Entry Here
-                    vic_Entry = pd.DataFrame(
-                        [
-                            {
-                                "ENTRY NUMBER": entryNumber,
-                                "DATE ENCODED":datetimeEncoded(),
-                                "PRO": "PRO 12",
-                                "PPO": Appo,
-                                "STATION": Amps,
-                                "PROVINCE":pi_distprov,
-                                "CITY":pi_citymun,
-                                "BARANGAY":incident_selected_brgy,
-                                "STREET": pi_street,
-                                "DATE REPORTED": dt_reported,
-                                "TIME REPORTED":time_reported_str,
-                                "DATE COMMITTED": dt_committed,
-                                "TIME COMMITTED": time_committed_str,
-                                "VICTIM FIRST NAME":vic_fname,
-                                "VICTIM MIDDLE NAME":vic_midname,
-                                "VICTIM LAST NAME":vic_lname,
-                                "VICTIM QUALIFIER":vic_qlfr,
-                                "VICTIM ALIAS":vic_alias,
-                                "VICTIM AGE":vic_age,
-                                "VICTIM SEX":vic_gndr,
-                                "VICTIM Province Address": vic_distprov,
-                                "Victim City Address":vic_cityMun,
-                                "VICTIM Street/House Number Address":vic_add_street,
-                                "SUSPECTS NAME (AGE/SEX)": sus_name,
-                                "OFFENSE": offense_Type,
-                                "OFFENSE TYPE": offenseClass,
-                                "NARRATIVE":det_narrative,
-                                "CASE STATUS":case_status,
+                    time_reported, time_committed = convert_to_proper_time(time_reported_str,time_committed_str)
 
 
-                            }
-                        ]
-                    )
-                    updated_vic_df =  pd.concat([vic_prof, vic_Entry], ignore_index=True)
+                    # Start adding the newEntry data on the on the existing data
+                    store_data(pi_distprov, pi_citymun, incident_selected_brgy, pi_street,dt_reported,time_reported,dt_committed,time_committed,vic_name,vic_fname,vic_midname,vic_lname,vic_qlfr,vic_alias,vic_age,vic_gndr,vic_distprov,vic_cityMun,vic_add_street, vic_address, sus_name, sus_address, offense_Type, offenseClass, det_narrative,case_status,entryNumber)
 
-                    # Update Google Sheets with the new Data
-                    conn.update(worksheet=str(Amps) + " - vic_prof", data=updated_vic_df)
-
+                    # store_data(entryNumber, pi_distprov)
 
                     st.success('Entry Successfuly Submitted')
-                    time.sleep(3)
-                    st.balloons
-                    st.cache_data.clear()
-                    st.switch_page("pages/entryCode.py")
+                    # time.sleep(3)
+                    # st.balloons
+                    # st.cache_data.clear()
+                    # st.switch_page("pages/entryCode.py")
                     
 
         except Exception as e:
 
-            st.error(f"An error occurred: Error Details: {str(e)}")
+            st.error(f"An error occurred: Error Details: {str(e)}\n{traceback.format_exc()}")
 
 
     # This line of code handles the entry form and I don't know why 😂

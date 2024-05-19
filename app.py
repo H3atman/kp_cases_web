@@ -1,5 +1,5 @@
 import streamlit as st
-import psycopg2
+from modules.helper import db_conn
 
 st.set_page_config("KP Cases Login")
 
@@ -14,29 +14,13 @@ css ='''
 st.markdown(css, unsafe_allow_html=True)
 
 
-# Get the PostgreSQL connection details from the secrets
-pg_conn = st.secrets["connections"]["postgresql"]
-
-
-
-# Connect to your PostgreSQL database
-def db_conn():
-    conn = psycopg2.connect(
-        dbname=pg_conn["database"],
-        user=pg_conn["username"],
-        password=pg_conn["password"],
-        host=pg_conn["host"],
-        port=pg_conn["port"]
-    )
-    return conn
-
-
 # Initialize Connection to the database
 conn = db_conn()
+# conn = st.connection("postgresql", type="sql")
 
 
 
-# Verify user credentials
+# Verify user credentials - OLD
 def authenticate_user(username, password):
     cursor = conn.cursor()
     cursor.execute("SELECT username, passwd FROM userbase WHERE username = %s AND passwd = %s", (username, password))
