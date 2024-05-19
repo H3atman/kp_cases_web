@@ -184,3 +184,13 @@ def convert_to_proper_time(time_reported_str, time_committed_str):
 
     # Return the time objects
     return time_reported, time_committed
+
+
+def query_encoded_data(Appo, Amps):
+    conn = st.connection("postgresql", type="sql")
+
+    df = conn.query(f"SELECT * FROM crime_incidents WHERE ppo = '{Appo}' AND station = '{Amps}';", ttl="100m",show_spinner=True, index_col="entry_number")
+
+    return df
+
+    

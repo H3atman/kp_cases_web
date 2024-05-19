@@ -1,5 +1,5 @@
 import streamlit as st
-from modules.helper import db_conn, store_entryNumber, get_next_entry_number
+from modules.helper import db_conn, store_entryNumber, get_next_entry_number, query_encoded_data
 from datetime import date
 
 st.set_page_config("KP Cases Detailed Entry")
@@ -81,10 +81,25 @@ else:
         
 
         return combined_value
+    
+
+
+    def encoded_cases_dataframe():
+        expand = st.expander("Click me 👆🏻 expand!")
+        with expand:
+            df = query_encoded_data(Appo, Amps)
+            st.dataframe(df,height=150)
+
+    def encoded_cases_table():
+        expand = st.expander("Click me 👆🏻 expand!")
+        with expand:
+            df = query_encoded_data(Appo, Amps)
+            st.table(df)
+        
 
 
     fullentryNum = new_entry()
-
+   
     # Save combined_value in session state
     if 'combined_value' not in st.session_state:
         st.session_state.combined_value = fullentryNum
@@ -95,3 +110,9 @@ else:
         # print(fullentryNum)
         store_entryNumber(fullentryNum, Appo, Amps)
         st.switch_page("pages/entryForm.py")
+
+    st.subheader("Encoded data - Dataframe")
+    encoded_cases_dataframe()
+
+    st.subheader("Encoded data - Table")
+    encoded_cases_table()
