@@ -356,17 +356,16 @@ else:
 footer_html = """
 <style>
 .sticky-footer {
-    position: fixed;
-    bottom: 0;
+    position="fixed",
+    bottom=0,
     width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
+    color="black",
+    text_align="center",
+    opacity=1
 }
 .center-div {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: grid;
+    place-items: center;
 }
 </style>
 <div class='sticky-footer center-div'>
@@ -374,3 +373,4 @@ footer_html = """
 </div>
 """
 st.markdown(footer_html, unsafe_allow_html=True)
+
