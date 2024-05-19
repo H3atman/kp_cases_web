@@ -306,7 +306,7 @@ else:
                 if sub_Entry:
                     # Fuction to encode data google sheet
                     print(f"{entryNumber} Entry Successfuly Submitted")
-                    print(dt_reported)
+                    # print(dt_reported)
 
                     # Process Victims profile
                     vic_name = profile(vic_fname,vic_midname,vic_lname,vic_qlfr, vic_alias,vic_age,vic_gndr)
@@ -332,7 +332,8 @@ else:
 
 
                     # Start adding the newEntry data on the on the existing data
-                    store_data(pi_distprov, pi_citymun, incident_selected_brgy, pi_street,dt_reported,time_reported,dt_committed,time_committed,vic_name,vic_fname,vic_midname,vic_lname,vic_qlfr,vic_alias,vic_age,vic_gndr,vic_distprov,vic_cityMun,vic_add_street, vic_address, sus_name, sus_address, offense_Type, offenseClass, det_narrative,case_status,entryNumber)
+                    store_data(entryNumber, pi_distprov, pi_citymun, incident_selected_brgy, pi_street,dt_reported,time_reported_str,dt_committed,time_committed_str,vic_name,vic_fname,vic_midname,vic_lname,vic_qlfr,vic_alias,vic_age,vic_gndr,vic_distprov,vic_cityMun,vic_add_street, vic_address, sus_name, sus_address, offense_Type, offenseClass, det_narrative,case_status)
+
 
                     # store_data(entryNumber, pi_distprov)
 
