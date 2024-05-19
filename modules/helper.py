@@ -188,8 +188,12 @@ def convert_to_proper_time(time_reported_str, time_committed_str):
         # If it's not a valid time string, assign time_reported to time_committed
         time_committed = time_reported
 
-    # Return the time objects
-    return time_reported, time_committed
+    # Convert the time objects into strings in the "HH:MM:SS" format
+    time_reported_str = time_reported.strftime("%H:%M:%S")
+    time_committed_str = time_committed.strftime("%H:%M:%S")
+
+    # Return the time strings
+    return time_reported_str, time_committed_str
 
 
 def query_encoded_data(Appo, Amps):
