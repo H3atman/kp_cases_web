@@ -127,23 +127,3 @@ else:
 
 
 
-footer_html = """
-<style>
-.sticky-footer {
-    position="fixed",
-    bottom=0,
-    width: 100%;
-    color="black",
-    text_align="center",
-    opacity=1
-}
-.center-div {
-    display: grid;
-    place-items: center;
-}
-</style>
-<div class='sticky-footer center-div'>
-    <p>Developed by Rafael Villanueva 🤙🏻🤘🏻🎉</p>
-</div>
-"""
-st.markdown(footer_html, unsafe_allow_html=True)
