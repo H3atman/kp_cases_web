@@ -363,8 +363,12 @@ footer_html = """
     margin-right: auto;
     text-align: center;
 }
+.center-div {
+    display: grid;
+    place-items: center;
+}
 </style>
-<div class='sticky-footer'>
+<div class='sticky-footer center-div'>
     <p>Developed by Rafael Villanueva 🤙🏻🤘🏻🎉</p>
 </div>
 """
