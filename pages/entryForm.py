@@ -348,7 +348,7 @@ else:
                     # store_data(entryNumber, pi_distprov)
 
                     st.success('Entry Successfuly Submitted')
-                    time.sleep(3)
+                    # time.sleep(3)
                     # st.balloons
                     st.cache_data.clear()
                     st.switch_page("pages/entryCode.py")
