@@ -1,6 +1,7 @@
 import streamlit as st
-from datetime import datetime, date
+from datetime import datetime
 import datetime
+from datetime import time
 import traceback
 from modules.helper import profile, process_offense, local_address, vic_name_process, db_conn, get_prov_data, get_muncity_data, get_brgy_data, get_crime_incidentName_data, get_crime_classification_data, store_data, convert_to_proper_time
 
@@ -338,7 +339,7 @@ else:
                     # store_data(entryNumber, pi_distprov)
 
                     st.success('Entry Successfuly Submitted')
-                    # time.sleep(3)
+                    time.sleep(3)
                     # st.balloons
                     st.cache_data.clear()
                     st.switch_page("pages/entryCode.py")

@@ -180,7 +180,12 @@ def store_data(newEntry, pi_distprov, pi_citymun, incident_selected_brgy, pi_str
 def convert_to_proper_time(time_reported_str, time_committed_str):
     # Convert the strings into datetime objects
     time_reported = datetime.strptime(time_reported_str, "%I:%M %p").time()
-    time_committed = datetime.strptime(time_committed_str, "%I:%M %p").time()
+
+    # Check if time_committed_str is not blank
+    if time_committed_str.strip():
+        time_committed = datetime.strptime(time_committed_str, "%I:%M %p").time()
+    else:
+        time_committed = None
 
     # Return the time objects
     return time_reported, time_committed
