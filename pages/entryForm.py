@@ -21,18 +21,16 @@ css ='''
 st.markdown(css, unsafe_allow_html=True)
 
 
-hide_st_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            header {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_st_style, unsafe_allow_html=True)
-
 st.warning("""
            
            Please dont refresh the website to avoid resetting your encoded data \n 
            You can hover to question mark icons "❔" to learn more.
+           
+           """)
+
+st.error("""
+           
+           Fill in the required details marked with :red[#] if everything is filled up a submit button will appear and your encoded data will be saved \n 
            
            """)
 
@@ -96,7 +94,7 @@ else:
         Abrgy = [item[0] for item in get_brgy_data(Appo, Amps)]  # Convert the result to a list
 
     else:
-        muncity_value = get_muncity_data(Appo)[0][0]  # Assuming the first value is the required one
+        muncity_value = get_muncity_data(Amps)[0][0]  # Assuming the first value is the required one
         Abrgy = [item[0] for item in get_brgy_data(Appo, Amps)]  # Convert the result to a list
 
 
