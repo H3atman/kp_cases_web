@@ -106,7 +106,7 @@ def get_brgy_data(Appo, Amps):
 def get_muncity_data(Amps):
     conn = db_conn()
     cursor = conn.cursor()
-    cursor.execute("SELECT mun_city FROM regionxii_brgy WHERE mp_cps = %s", (Amps,))
+    cursor.execute("SELECT mun_city FROM regionxii_brgy WHERE mps_cps = %s", (Amps,))
     data = cursor.fetchall()
     cursor.close()
     return data
