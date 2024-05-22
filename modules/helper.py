@@ -103,10 +103,10 @@ def get_brgy_data(Appo, Amps):
 
 # Function to retrieve MUN/CITY from the database
 @st.cache_data(ttl="60m")
-def get_muncity_data(Appo):
+def get_muncity_data(Amps):
     conn = db_conn()
     cursor = conn.cursor()
-    cursor.execute("SELECT mun_city FROM regionxii_brgy WHERE ppo_cpo = %s", (Appo,))
+    cursor.execute("SELECT mun_city FROM regionxii_brgy WHERE mp_cps = %s", (Amps,))
     data = cursor.fetchall()
     cursor.close()
     return data
