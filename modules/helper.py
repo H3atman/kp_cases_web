@@ -18,7 +18,7 @@ def profile(fname, midname, lname, qlfr, alias, age, sex):
     if not sex:
         sex = "Unidentified"
     if not age:
-        age = "Unidentified"
+        age = "0"
     name = f"{fname} {midname} {lname} {qlfr} alias {alias} ({age}/{sex})"
     return name
 
@@ -36,9 +36,17 @@ def vic_name_process(fname, midname, lname, qlfr, alias, age, sex):
     if not sex:
         sex = "Unidentified"
     if not age:
-        age = "Unidentified"
+        age = "0"
 
     return fname, midname, lname, qlfr, alias, age, sex
+
+def time_committed_reported_saved_data(time_committed, time_reported):
+    if not time_reported:
+        time_reported = None
+    if not time_committed:
+        time_committed = None
+    return time_committed, time_reported
+
 
 def process_offense(offenseType, otherOffense, offenseClass):
     if not offenseType and not offenseClass:
@@ -178,27 +186,27 @@ def store_data(newEntry, pi_distprov, pi_citymun, incident_selected_brgy, pi_str
     return "The data has been successfuly submitted"
 
 
-def convert_to_proper_time(time_reported_str, time_committed_str):
-    # Convert the strings into datetime objects
-    time_reported = datetime.strptime(time_reported_str, "%I:%M %p").time()
+# def convert_to_proper_time(time_reported_str, time_committed_str):
+#     # Convert the strings into datetime objects
+#     time_reported = datetime.strptime(time_reported_str, "%I:%M %p").time()
 
-    # Check if time_committed_str is not blank and is a valid time string
-    try:
-        if time_committed_str:
-            time_committed = datetime.strptime(time_committed_str, "%I:%M %p").time()
-        else:
-            time_committed = time_reported
-    except Exception as e:
-        # If it's not a valid time string, assign time_reported to time_committed
-        st.error(f"An error occurred: Error Details22: {str(e)}\n{traceback.format_exc()}")
-        time_committed = time_reported
+#     # Check if time_committed_str is not blank and is a valid time string
+#     try:
+#         if time_committed_str:
+#             time_committed = datetime.strptime(time_committed_str, "%I:%M %p").time()
+#         else:
+#             time_committed = time_reported
+#     except Exception as e:
+#         # If it's not a valid time string, assign time_reported to time_committed
+#         st.error(f"An error occurred: Error Details22: {str(e)}\n{traceback.format_exc()}")
+#         time_committed = time_reported
 
-    # Convert the time objects into strings in the "HH:MM:SS" format
-    time_reported_str = time_reported.strftime("%H:%M:%S")
-    time_committed_str = time_committed.strftime("%H:%M:%S")
+#     # Convert the time objects into strings in the "HH:MM:SS" format
+#     time_reported_str = time_reported.strftime("%H:%M:%S")
+#     time_committed_str = time_committed.strftime("%H:%M:%S")
 
-    # Return the time strings
-    return time_reported_str, time_committed_str
+#     # Return the time strings
+#     return time_reported_str, time_committed_str
 
 
 

@@ -3,7 +3,8 @@ from datetime import datetime
 import datetime
 from datetime import time
 import traceback
-from modules.helper import profile, process_offense, local_address, vic_name_process, db_conn, get_prov_data, get_muncity_data, get_brgy_data, get_crime_incidentName_data, get_crime_classification_data, store_data, convert_to_proper_time
+from modules.helper import profile, process_offense, local_address, vic_name_process, db_conn, get_prov_data, get_muncity_data, get_brgy_data, get_crime_incidentName_data, get_crime_classification_data, store_data, time_committed_reported_saved_data
+from modules.ui_models import input_time_reported, input_time_committed
 
 st.set_page_config("New Entry")
 
@@ -90,7 +91,7 @@ else:
 
     # Get the Municipality Value and Barangay Value
     if Appo == "GENERAL SANTOS CPO":
-        muncity_value = get_muncity_data(Appo)[0][0]  # Assuming the first value is the required one
+        muncity_value = get_muncity_data(Amps)[0][0]  # Assuming the first value is the required one
         Abrgy = [item[0] for item in get_brgy_data(Appo, Amps)]  # Convert the result to a list
 
     else:
@@ -205,28 +206,61 @@ else:
 
                 st.write("---")
 
-                DTreported, DTcommitted = st.columns(2)
-                with DTreported:
-                    st.subheader("Date & Time Reported")
-                    dt_reported = st.date_input("Date Reported :red[#]",help="If di po available sa data ang exact date reported paki pili nalang po ang 1st day of the month", format="YYYY/MM/DD")
-                    if dt_reported == datetime.date.today():
-                        st.warning("Please change the Date Reported")
-                    time_reported_str = st.text_input("Time Reported", placeholder='Time format 12:00 AM')
-                    # Validate the time input
-                    try:
-                        valid_time = datetime.datetime.strptime(time_reported_str, '%I:%M %p')
-                        st.success("Time input is valid.")
-                    except ValueError:
-                        st.error("Time input is not valid. Please enter time in the format 12:00 AM.")
+                time_reported_str = None
+                time_committed_str = None
+                if "input_time_reported" not in st.session_state or "input_time_committed" not in st.session_state:
+                    DTreported, DTcommitted = st.columns(2)
+                    with DTreported:
+                        st.subheader("Date & Time Reported")
+                        dt_reported = st.date_input("Date Reported :red[#]",help="If di po available sa data ang exact date reported paki pili nalang po ang 1st day of the month", format="YYYY/MM/DD")
+                        if dt_reported == datetime.date.today():
+                            st.warning("Please change the Date Reported")
+                        col1 , col2 = st.columns(2)
+                        col1.text_input("Time Reported", disabled=True)
+                        col2.write("\n")
+                        col2.write("\n")
+                        if col2.button("Enter Time",use_container_width=True, key="timereported"):
+                            input_time_reported()
 
 
+                    with DTcommitted:
+                        st.subheader("Date & Time Committed")
+                        dt_committed = st.date_input("Date Committed",help="If di po available sa data ang exact date reported paki pili nalang po ang 1st day of the month",value=None, format="YYYY/MM/DD")
+                        col1 , col2 = st.columns(2)
+                        col1.text_input("Time Committed", disabled=True)
+                        col2.write("\n")
+                        col2.write("\n")
+                        if col2.button("Enter Time",use_container_width=True,key="timecommitted"):
+                            input_time_committed()
+                else:
+                    DTreported, DTcommitted = st.columns(2)
+                    with DTreported:
+                        st.subheader("Date & Time Reported")
+                        dt_reported = st.date_input("Date Reported :red[#]",help="If di po available sa data ang exact date reported paki pili nalang po ang 1st day of the month", format="YYYY/MM/DD")
+                        if dt_reported == datetime.date.today():
+                            st.warning("Please change the Date Reported")
+                        col1 , col2 = st.columns(2)
+                        # Format the datetime object to a string representing time in the "%I:%M %p" format
+                        time_reported_str = st.session_state.input_time_reported["timevalue"].strftime("%I:%M %p")
+                        col1.text_input("Time Reported",value=time_reported_str,disabled=True)
+                        col2.write("\n")
+                        col2.write("\n")
+                        if col2.button("Enter Time",use_container_width=True, key="timereported1"):
+                            input_time_reported()
 
 
-                with DTcommitted:
-                    st.subheader("Date & Time Committed")
-                    dt_committed = st.date_input("Date Committed",help="If di po available sa data ang exact date reported paki pili nalang po ang 1st day of the month",value=None, format="YYYY/MM/DD")
-                    time_committed_str = st.text_input("Time Committed", placeholder='Time format 12:00 AM',value="11:59 PM",disabled=True)
-                    # time_committed = convert_time(time_committed_str)
+                    with DTcommitted:
+                        st.subheader("Date & Time Committed")
+                        dt_committed = st.date_input("Date Committed",help="If di po available sa data ang exact date reported paki pili nalang po ang 1st day of the month",value=None, format="YYYY/MM/DD")
+                        col1 , col2 = st.columns(2)
+                        # Format the datetime object to a string representing time in the "%I:%M %p" format
+                        time_committed_str = st.session_state.input_time_committed["timevalue"].strftime("%I:%M %p")
+                        col1.text_input("Time Committed",value=time_committed_str,disabled=True)
+                        col2.write("\n")
+                        col2.write("\n")
+                        if col2.button("Enter Time",use_container_width=True,key="timecommitted1"):
+                            input_time_committed()
+
 
                 st.write("---")
 
@@ -302,13 +336,13 @@ else:
             if not validate_case_status(case_status):
                 st.error('Case status is required.')
             # Add time validation here
-            if time_reported_str:
-                try:
-                    valid_time = datetime.datetime.strptime(time_reported_str, '%I:%M %p')
-                except ValueError:
-                    st.error("Time input is not valid. Please enter time in the format 12:00 AM.")
+            # if time_reported_str:
+            #     try:
+            #         valid_time = datetime.datetime.strptime(time_reported_str, '%I:%M %p')
+            #     except ValueError:
+            #         st.error("Time input is not valid. Please enter time in the format 12:00 AM.")
 
-            if validate_name(vic_fname) and validate_name(vic_lname) and validate_gender(vic_gndr) and validate_brgy(vic_brgy) and validate_date_reported(dt_reported) and validate_brgy(incident_selected_brgy) and validate_offense(check, offenseType, otherOffense) and validate_case_status(case_status) and (not time_reported_str or valid_time):
+            if validate_name(vic_fname) and validate_name(vic_lname) and validate_gender(vic_gndr) and validate_brgy(vic_brgy) and validate_date_reported(dt_reported) and validate_brgy(incident_selected_brgy) and validate_offense(check, offenseType, otherOffense) and validate_case_status(case_status):
 
                 sub_Entry = st.button("Submit Entry",use_container_width=True, type="primary")
                 if sub_Entry:
@@ -336,11 +370,11 @@ else:
                     # Process Offense
                     offense_Type, offenseClass = process_offense(offenseType,otherOffense,offClassification)
 
-                    time_reported, time_committed = convert_to_proper_time(time_reported_str,time_committed_str)
+                    time_reported, time_committed = time_committed_reported_saved_data(time_reported_str,time_committed_str)
 
 
                     # Start adding the newEntry data on the on the existing data
-                    store_data(entryNumber, pi_distprov, pi_citymun, incident_selected_brgy, pi_street,dt_reported,time_reported_str,dt_committed,time_committed_str,vic_name,vic_fname,vic_midname,vic_lname,vic_qlfr,vic_alias,vic_age,vic_gndr,vic_distprov,vic_cityMun,vic_add_street, vic_address, sus_name, sus_address, offense_Type, offenseClass, det_narrative,case_status)
+                    store_data(entryNumber, pi_distprov, pi_citymun, incident_selected_brgy, pi_street,dt_reported,time_reported,dt_committed,time_committed,vic_name,vic_fname,vic_midname,vic_lname,vic_qlfr,vic_alias,vic_age,vic_gndr,vic_distprov,vic_cityMun,vic_add_street, vic_address, sus_name, sus_address, offense_Type, offenseClass, det_narrative,case_status)
 
 
                     # store_data(entryNumber, pi_distprov)
@@ -349,7 +383,14 @@ else:
                     # time.sleep(3)
                     # st.balloons
                     st.cache_data.clear()
+                    if 'input_time_reported' in st.session_state:
+                        del st.session_state['input_time_reported']
+
+                    if 'input_time_committed' in st.session_state:
+                        del st.session_state['input_time_committed']
                     st.switch_page("pages/entryCode.py")
+
+                    
                     
 
         except Exception as e:
